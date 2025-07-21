@@ -1,0 +1,144 @@
+import pandas as pd
+import numpy as np
+import random
+
+# Updated categories
+genders = ['Male', 'Female', 'Other']
+education_levels = ['Bachelors', 'Masters', 'PhD']
+
+job_roles = [
+    'Developer', 'Manager', 'Analyst', 'HR', 'Designer', 'Tester', 'Tech Lead',
+    'Data Scientist', 'System Admin', 'Consultant'
+]
+
+cities = [
+    'Bangalore', 'Mumbai', 'Delhi', 'Chennai', 'Hyderabad', 'Pune',
+    'Kolkata', 'Ahmedabad', 'Jaipur', 'Kochi'
+]
+
+company_types = [
+    'Startup', 'MNC', 'Government', 'Mid-size', 'Consultancy', 'NGO', 'Product-Based'
+]
+
+def generate_salary_data(n=500):
+    data = []
+
+    for _ in range(n):
+        age = random.randint(21, 60)
+        gender = random.choice(genders)
+        edu = random.choice(education_levels)
+        role = random.choice(job_roles)
+        exp = random.randint(0, 40)
+        city = random.choice(cities)
+        company = random.choice(company_types)
+        hours = random.randint(30, 60)
+
+        salary = 20000 + (exp * 1500) + (education_levels.index(edu) * 5000)
+
+        if company == 'MNC':
+            salary += 10000
+        elif company == 'Product-Based':
+            salary += 12000
+        elif company == 'Startup':
+            salary += 5000
+        elif company == 'Consultancy':
+            salary += 8000
+        elif company == 'Government':
+            salary += 6000
+
+        if role in ['Manager', 'Tech Lead']:
+            salary += 15000
+        elif role == 'Data Scientist':
+            salary += 20000
+        elif role == 'Consultant':
+            salary += 12000
+
+        if city in ['Bangalore', 'Mumbai', 'Delhi']:
+            salary += 5000
+
+        salary += random.randint(-7000, 7000)
+
+        data.append([age, gender, edu, role, exp, city, company, hours, int(salary)])
+
+    df = pd.DataFrame(data, columns=[
+        'Age', 'Gender', 'Education', 'JobRole', 'Experience',
+        'City', 'CompanyType', 'WorkHours', 'Salary'
+    ])
+    return df
+
+# Generate and save
+df = generate_salary_data()
+df.to_csv("employee_salary_data.csv", index=False)
+print("✅ Dataset created and saved as employee_salary_data.csv")
+
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LinearRegression
+from sklearn.preprocessing import OneHotEncoder
+from sklearn.compose import ColumnTransformer
+from sklearn.pipeline import Pipeline
+import joblib
+df = pd.read_csv("employee_salary_data.csv")
+X = df.drop("Salary", axis=1)
+y = df["Salary"]
+categorical_cols = ['Gender', 'Education', 'JobRole', 'City', 'CompanyType']
+numeric_cols = ['Age', 'Experience', 'WorkHours']
+preprocessor = ColumnTransformer([
+    ('cat', OneHotEncoder(drop='first'), categorical_cols)
+], remainder='passthrough')
+model = Pipeline([
+    ('preprocessor', preprocessor),
+    ('regressor', LinearRegression())
+])
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+model.fit(X_train, y_train)
+joblib.dump(model, 'salary_prediction_model.pkl')
+print("✅ Model trained and saved as salary_prediction_model.pkl")
+ 
+import streamlit as st
+import pandas as pd
+import joblib
+model = joblib.load("salary_prediction_model.pkl")
+st.set_page_config(
+    page_title="💼 Employee Salary Predictor",
+    page_icon="💰",
+    layout="centered"
+)
+st.sidebar.title("📊 Navigation")
+st.sidebar.info("Fill out employee details and click Predict.")
+st.sidebar.success("Made by Gagana 🚀")
+st.sidebar.markdown("💻 IBM-AICTE Internship Project")
+st.title("💼 Employee Salary Prediction App")
+st.markdown("Use this tool to estimate monthly salary based on job details.")
+age = st.slider("Age", 21, 60, 25)
+gender = st.selectbox("Gender", ["Male", "Female", "Other"])
+education = st.selectbox("Education Level", ["Bachelors", "Masters", "PhD"])
+job_role = st.selectbox("Job Role", [
+    "Developer", "Manager", "Analyst", "HR", "Designer", "Tester", "Tech Lead",
+    "Data Scientist", "System Admin", "Consultant"
+])
+experience = st.slider("Years of Experience", 0, 40, 2)
+city = st.selectbox("City", [
+    'Bangalore', 'Mumbai', 'Delhi', 'Chennai', 'Hyderabad', 'Pune',
+    'Kolkata', 'Ahmedabad', 'Jaipur', 'Kochi'
+])
+company_type = st.selectbox("Company Type", [
+    'Startup', 'MNC', 'Government', 'Mid-size', 'Consultancy', 'NGO', 'Product-Based'
+])
+work_hours = st.slider("Work Hours per Week", 30, 60, 40)
+if st.button("🎯 Predict Salary"):
+    input_df = pd.DataFrame([{
+        'Age': age,
+        'Gender': gender,
+        'Education': education,
+        'JobRole': job_role,
+        'Experience': experience,
+        'City': city,
+        'CompanyType': company_type,
+        'WorkHours': work_hours
+    }])
+    prediction = model.predict(input_df)[0]
+    st.success(f"✅ Estimated Monthly Salary: ₹{int(prediction):,}")
+    st.markdown("Note: This is an estimate based on the trained data.")
+st.markdown("---")
+st.caption("© 2025 Gagana | IBM-AICTE Internship Project")
