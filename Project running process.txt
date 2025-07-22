@@ -1,0 +1,15 @@
+conda create -n streamenv python=3.10 -y [installed new python version supporting the project]
+
+conda activate streamenv  [to activate my anaconda version]
+
+C:\Users\DELL\anaconda3\envs\streamenv  [its path]
+
+pip install pyzmq --no-cache-dir  [installing pyzmq version]
+
+cd "C:\Users\DELL\OneDrive\SalaryApp"  [giving my Employee salary prediction file path]
+
+streamlit run app.py  [running the streamlit in order to appear my project application]
+
+
+Local URL: http://localhost:8502         [this is my project local url when copy pasted on the browser my project appears]
+Network URL: http://192.168.201.50:8502
